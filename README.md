@@ -128,20 +128,8 @@ docker-compose up -d
 
 ## 进阶
 ### 强制跳转 HTTPS
-如使用`HTTPS`部署,可手动修改`nginx/vhost`目录中的`rss.conf`和`rsshub.conf`第`9`行,将`#`注释符号删除.
-```nginx
-    return 301 https://rss.yourdomain.com$request_uri;
-```
-重启 docker compose 生效
-```shell
-# 建议直接停止并在次启动
-cd rssforever
-# 进入目录
-docker-compose down
-# 停止
-docker-compose up -d
-# 启动
-```
+**2021-05-28 新增功能:**  
+当`.env`配置`PROTOCOL=https`时,将自动配置`return 301`强制跳转至`HTTPS`协议.
 
 ### 证书更新
 本项目目前并未配置自动更新证书的功能,今后视情况加入其中.  

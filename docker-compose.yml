@@ -20,6 +20,7 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl
       - ./nginx/html:/usr/share/nginx/html
     environment:
+      - PROTOCOL=${PROTOCOL}
       - RSS_DOMAIN=${RSS_DOMAIN}
       - RSS_DOAMIN_CERT=${RSS_DOAMIN_CERT}
       - RSS_DOMAIN_KEY=${RSS_DOMAIN_KEY}
