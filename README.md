@@ -1,6 +1,6 @@
 # rssforever
 ## 简介
-本项目为 Nginx + TTRSS + RSSHub 整合 docker 容器化快速一键部署方案.
+本项目为 Nginx + TTRSS + RSSHub + Watchtower + ACME 整合 docker 容器化快速一键部署方案,支持一键脚本快速安装部署.
 
 ### 前言
 [rssforever.com](rssforever.com) 为网友提供免费的 RSS 和 RSSHub 服务已经一年有余,由于服务器压力及个人精力有限等原因已停止提供 RSS 服务.鉴于很多新手用户技术有限,特将 nginx , ttrss , rsshub 三个项目整合到 docker compose 中,实现一键部署使用.
@@ -16,15 +16,43 @@
 - 服务器未占用 80/443 端口
 - 服务器已安装 docker 和 docker compose 环境 ( 未安装可参考下文简易安装指南 )
 
-> 由于此项目为新手向服务,不支持已被其他服务占用 80/443 端口的服务器.请停止相关服务或更换新服务器部署使用.  
-> 此项目一共会启动 9 个容器,服务器性能不足请不要部署其他应用,并且私有化个人使用.避免服务器压力过大.  
+> 本项目不支持已被其他服务占用 80/443 端口的服务器.请停止相关服务或更换新服务器部署使用.  
+> 此项目最多一共会启动 10 个容器,服务器性能不足请不要部署其他应用,并且私有化个人使用.避免服务器压力过大.  
 > 如果服务器上已有 nginx 等占用 80/443 端口的服务,同时又有部署的需求,请联系我进行付费技术支持.
 
 
 ---
 
+## 更新
+**2021-06-18** 更新一键安装脚本.
 
-## 部署
+## 一键安装脚本
+一键安装脚本支持以下四种模式,请根据自身情况选择.
+1. nginx + ttrss + rsshub + watchtoer + acme 自动申请和续签证书并开启 HTTPS 模式
+2. nginx + ttrss + rsshub + watchtoer + 无证书 HTTP 模式
+3. nginx + ttrss + acme 自动申请和续签证书并开启 HTTPS 模式
+4. nginx + ttrss + 无证书 HTTP 模式
+
+### 前期准备
+本脚本适用于`ttrss`和`rsshub`域名使用同一根域名,例如`rss.rssforever.com`和`rsshub.rssforever.com`将自动申请`*.rssforever.com`泛域名证书.且脚本仅适用于首次安装.请提前将以上域名解析指向服务器.同时参考 [这篇文章](https://www.ioiox.com/archives/87.html) 中的 `准备 DNS API` 章节来获取域名服务商 API 以便脚本申请证书使用.
+
+### 执行脚本
+```shell
+wget https://raw.githubusercontent.com/stilleshan/rssforever/main/install.sh && chmod +x install.sh && ./install.sh
+```
+
+### 定时更新证书
+证书每月`1`日自动更新,请执行以下命令来定时每月重启`nginx`服务刷新证书.也可每月手动执行`docker-compose restart`来重启服务.
+```shell
+crontab -e
+# 添加以下计划任务
+0 0 2 * * docker restart rssforever_nginx_1
+# 为避免时区问题,将在每月 2 号 0 点执行
+```
+
+## 手动部署
+**首次部署建议使用上文一键安装脚本,以便配置证书的申请和更新.下文手动部署将无法自动更新证书.**
+
 docker 及 docker compose 必须提前安装到服务器中,相关教程网上很多,也可逐一执行以下 6 条命令安装启动:
 ```shell
 # 安装 docker
