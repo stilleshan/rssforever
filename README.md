@@ -1,6 +1,7 @@
 # rssforever
 ## 简介
 本项目为 Nginx + TTRSS + RSSHub + Watchtower + ACME 整合 docker 容器化快速一键部署方案,支持一键脚本快速安装部署.
+> *一键安装脚本已同时支持 X86 和 ARM 架构*
 
 ### 前言
 [rssforever.com](rssforever.com) 为网友提供免费的 RSS 和 RSSHub 服务已经一年有余,由于服务器压力及个人精力有限等原因已停止提供 RSS 服务.鉴于很多新手用户技术有限,特将 nginx , ttrss , rsshub 三个项目整合到 docker compose 中,实现一键部署使用.
@@ -24,6 +25,7 @@
 ---
 
 ## 更新
+**2021-07-01** 更新一键安装脚本同时支持 X86 和 ARM 架构.
 **2021-06-18** 更新一键安装脚本.
 
 ## 一键安装脚本

@@ -11,6 +11,7 @@ Font="\033[0m"
 # fonts color
 
 WORK_PATH=$(dirname $(readlink -f $0))
+UNAME=$(uname -m)
 
 
 menu (){
@@ -18,6 +19,7 @@ menu (){
     echo -e "${Green}=========================================================================================${Font}"
     echo -e "${Green}欢迎使用 nginx + ttrss + rsshub + watchtower 一键安装脚本${Font}"
     echo -e "${Red}注意:本脚本需要服务器有 docker 和 docker compose 环境${Font}"
+    echo -e "${Green}2021-07-01 更新同时支持 X86 和 ARM 架构${Font}"
     echo -e "${Green}=========================================================================================${Font}"
     echo "1) nginx + ttrss + rsshub + watchtower"
     echo "2) nginx + ttrss"
@@ -54,6 +56,7 @@ choice1 (){
         conf_ssl $*
         git_clone
         conf_env
+        arm_x86_all
         conf_auto_acme
         up
         ;;
@@ -62,6 +65,7 @@ choice1 (){
         git_clone
         conf_env
         remove_acme
+        arm_x86_all
         up
         ;;
         3)
@@ -88,6 +92,7 @@ choice2 (){
         git_clone
         conf_env
         remove_rsshub
+        arm_x86_ttrss_only
         conf_auto_acme
         up
         ;;
@@ -97,6 +102,7 @@ choice2 (){
         conf_env
         remove_acme
         remove_rsshub
+        arm_x86_ttrss_only
         up
         ;;
         3)
@@ -296,8 +302,8 @@ conf_env (){
 }
 
 remove_rsshub (){
-    sed -i '34d' ${WORK_PATH}/rssforever/docker-compose.yml
     sed -i '80,131d' ${WORK_PATH}/rssforever/docker-compose.yml
+    sed -i '34d' ${WORK_PATH}/rssforever/docker-compose.yml
     mv ${WORK_PATH}/rssforever/nginx/vhost/rsshub.conf ${WORK_PATH}/rssforever/nginx/vhost/rsshub.conf.bak
 }
 
@@ -315,6 +321,23 @@ EOF
 
 remove_acme (){
     sed -i '133,143d' ${WORK_PATH}/rssforever/docker-compose.yml
+}
+
+arm_x86_all (){
+    echo "Check X86 or ARM"
+    if [ ! $UNAME == "x86_64" ] ; then
+        sed -i '98,104d' ${WORK_PATH}/rssforever/docker-compose.yml
+        sed -i '60,68d' ${WORK_PATH}/rssforever/docker-compose.yml
+        sed -i '/PUPPETEER_WS_ENDPOINT/d' ${WORK_PATH}/rssforever/docker-compose.yml
+        sed -i '/- browserless/d' ${WORK_PATH}/rssforever/docker-compose.yml
+    fi
+}
+
+arm_x86_ttrss_only (){
+    echo "Check X86 or ARM"
+    if [ ! $UNAME == "x86_64" ] ; then
+        sed -i '60,68d' ${WORK_PATH}/rssforever/docker-compose.yml
+    fi
 }
 
 up (){
