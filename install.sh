@@ -61,7 +61,7 @@ choice1 (){
         confirm_domain
         git_clone
         conf_env
-        conf_auto_acme
+        remove_acme
         up
         ;;
         3)
@@ -87,7 +87,7 @@ choice2 (){
         conf_ssl $*
         git_clone
         conf_env
-        conf_compose_file
+        remove_rsshub
         conf_auto_acme
         up
         ;;
@@ -95,7 +95,8 @@ choice2 (){
         confirm_domain
         git_clone
         conf_env
-        conf_compose_file
+        remove_acme
+        remove_rsshub
         up
         ;;
         3)
@@ -294,7 +295,7 @@ conf_env (){
     fi
 }
 
-conf_compose_file (){
+remove_rsshub (){
     sed -i '34d' ${WORK_PATH}/rssforever/docker-compose.yml
     sed -i '80,131d' ${WORK_PATH}/rssforever/docker-compose.yml
     mv ${WORK_PATH}/rssforever/nginx/vhost/rsshub.conf ${WORK_PATH}/rssforever/nginx/vhost/rsshub.conf.bak
@@ -310,19 +311,10 @@ EOF
     if [ "$CHOICE_CLOUDFLARE_INPUT" == "3" ]; then
         sed -i "2a export ${API_ZONE_HEADER}=\"${API_ZONE_HEADER_INPUT}\"" ${WORK_PATH}/rssforever/acme/account.conf
     fi
+}
 
-    cat >>${WORK_PATH}/rssforever/docker-compose.yml<<'EOF'
-#---------------------------------------- acme.sh ----------------------------------------#
-  acme:
-    image: neilpang/acme.sh
-    # container_name: acme
-    volumes:
-      - ./acme:/conf
-      - ./nginx/ssl:/ssl
-    restart: always
-    network_mode: host
-    command: ["sh", "-c", "/conf/start.sh"]
-EOF
+remove_acme (){
+    sed -i '133,143d' ${WORK_PATH}/rssforever/docker-compose.yml
 }
 
 up (){
