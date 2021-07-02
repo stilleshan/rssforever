@@ -327,7 +327,7 @@ arm_x86_all (){
     echo "Check X86 or ARM"
     if [ ! $UNAME == "x86_64" ] ; then
         sed -i '98,104d' ${WORK_PATH}/rssforever/docker-compose.yml
-        sed -i '60,68d' ${WORK_PATH}/rssforever/docker-compose.yml
+        sed -i '53,68d' ${WORK_PATH}/rssforever/docker-compose.yml
         sed -i '/PUPPETEER_WS_ENDPOINT/d' ${WORK_PATH}/rssforever/docker-compose.yml
         sed -i '/- browserless/d' ${WORK_PATH}/rssforever/docker-compose.yml
     fi
@@ -336,7 +336,7 @@ arm_x86_all (){
 arm_x86_ttrss_only (){
     echo "Check X86 or ARM"
     if [ ! $UNAME == "x86_64" ] ; then
-        sed -i '60,68d' ${WORK_PATH}/rssforever/docker-compose.yml
+        sed -i '53,68d' ${WORK_PATH}/rssforever/docker-compose.yml
     fi
 }
 
