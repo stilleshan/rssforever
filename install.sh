@@ -361,6 +361,11 @@ if ! type docker-compose >/dev/null 2>&1 ; then
     exit 0
 fi
 
+if ! type git >/dev/null 2>&1 ; then
+    echo -e "${Red}本机未安装 git 已退出脚本.${Font}"
+    exit
+fi
+
 if [ -d "${WORK_PATH}/rssforever" ] ; then
     echo -e "${Green}当前目录存在 rssforever 项目.请更换目录,或删除后再次执行脚本.${Font}"
     exit 0

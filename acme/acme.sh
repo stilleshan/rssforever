@@ -22,6 +22,8 @@ acme (){
     cp /acme.sh/${DOMAIN}/fullchain.cer /ssl/${DOMAIN}.cer
     cp /acme.sh/${DOMAIN}/${DOMAIN}.key /ssl/${DOMAIN}.key
     mv /acme.sh/${DOMAIN} /acme.sh/${DOMAIN}-$(date +%Y)-$(date +%m)-$(date +%d)-${RANDOM}
+    rm -rf /acme.sh/ca
+    rm -rf /acme.sh/http.header
 }
 
 if [ ! -n "${DOMAIN}" ] ; then
@@ -31,5 +33,5 @@ else
 fi
 
 cat >/var/spool/cron/crontabs/root<<EOF
-0 0 1 * * /conf/acme.sh >/dev/null 2>&1
+0 0 3 * * /conf/acme.sh >/dev/null 2>&1
 EOF
