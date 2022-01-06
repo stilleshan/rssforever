@@ -46,6 +46,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-freshrss}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-freshrss}
       POSTGRES_DB: ${POSTGRES_DB:-freshrss}
+    networks:
+      - rssforever
 
   service.rss:
     image: freshrss/freshrss:latest
@@ -60,6 +62,8 @@ services:
     environment:
       CRON_MIN: '*/20'
       TZ: Asia/Shanghai
+    networks:
+      - rssforever
 
 # ---------------------------------------- acme.sh ---------------------------------------- #
   acme:
