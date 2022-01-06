@@ -42,18 +42,18 @@ welcome (){
 check_env (){
     echo -e "${Green}=========================================================================================${Font}"
     echo -e "${Green}开始检查服务器环境${Font}"
-    # if ! type docker >/dev/null 2>&1 ; then
-    #     echo -e "${Red}当前系统 docker 未安装,已退出脚本.${Font}"
-    #     exit 0
-    # fi
-    # if ! type docker-compose >/dev/null 2>&1 ; then
-    #     echo -e "${Red}当前系统 docker-compose 未安装,已退出脚本.${Font}"
-    #     exit 0
-    # fi
-    # if ! type git >/dev/null 2>&1 ; then
-    #     echo -e "${Red}当前系统 git 未安装,已退出脚本.${Font}"
-    #     exit 0
-    # fi
+    if ! type docker >/dev/null 2>&1 ; then
+        echo -e "${Red}当前系统 docker 未安装,已退出脚本.${Font}"
+        exit 0
+    fi
+    if ! type docker-compose >/dev/null 2>&1 ; then
+        echo -e "${Red}当前系统 docker-compose 未安装,已退出脚本.${Font}"
+        exit 0
+    fi
+    if ! type git >/dev/null 2>&1 ; then
+        echo -e "${Red}当前系统 git 未安装,已退出脚本.${Font}"
+        exit 0
+    fi
     if [ -d "${WORK_PATH}/rssforever" ] ; then
         echo -e "${Red}当前目录存在 rssforever 项目.请更换目录,或删除后再次执行脚本.${Font}"
         exit 0

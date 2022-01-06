@@ -40,5 +40,5 @@ else
 fi
 
 cat >/var/spool/cron/crontabs/root <<EOF
-0 0 10 * * /conf/acme.sh >/dev/null 2>&1
+0 0 1 * * /conf/acme.sh >/dev/null 2>&1
 EOF

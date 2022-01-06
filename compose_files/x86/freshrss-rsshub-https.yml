@@ -51,7 +51,7 @@ services:
       - rssforever
 
   service.rss:
-    image: freshrss/freshrss:latest
+    image: freshrss/freshrss:${FRESHRSS_X86_VERSION}
     # container_name: freshrss-app
     hostname: freshrss-app
     restart: unless-stopped
@@ -114,7 +114,7 @@ services:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_SCHEDULE=0 0 10 * * *
     restart: always
-    command: rssforever-watchtower-1 rssforever_rsshub-1 rssforever_redis-1 rssforever_browserless-1 rssforever_acme-1
+    command: rssforever_acme-1 rssforever_watchtower_1 rssforever_rsshub_1 rssforever_redis_1 rssforever_browserless_1 rssforever_acme_1 rssforever-watchtower-1 rssforever_rsshub-1 rssforever_redis-1 rssforever_browserless-1 
     networks:
       - rssforever
 

@@ -50,7 +50,7 @@ services:
       - rssforever
 
   service.rss:
-    image: freshrss/freshrss:latest
+    image: freshrss/freshrss:${FRESHRSS_X86_VERSION}
     # container_name: freshrss-app
     hostname: freshrss-app
     restart: unless-stopped

@@ -47,11 +47,7 @@
 wget https://raw.githubusercontent.com/stilleshan/rssforever/main/install.sh && chmod +x install.sh && ./install.sh
 ```
 
-## 注意事项
-### docker-compose 版本
-建议将 docker-compose 版本升级到 v2.x.x 以上,建议 v2.2.2 版本.  
-新版 docker-compose 启动的容器名命名格式于老版本不同,使用旧版会导致`Watchtower`无法监控更新镜像.除此之外无其他影响.
-
+## 使用
 ### TTRSS
 默认账户: admin  
 默认密码: password
@@ -65,7 +61,15 @@ FreshRSS 首次访问需要设置数据库,选择`PostgreSQL`:
 
 ![snapshot01.jpg](./snapshot01.jpg)
 
-### 定时更新证书
+### docker compose 版本
+建议将 docker compose 版本升级到 v2.x.x 以上,建议 v2.2.2 版本.
+
+### 更新镜像
+本项目配置有`Watchtower`来监控部分容器的镜像更新.  
+Nginx / TTRSS / FreshRSS 的版本在`.env`文件中定义,请谨慎修改更新.  
+如需更新,建议先行备份`rssforever`目录,再执行`docker-compose down`停止服务,修改版本号后再次执行`docker-compose up -d`启动服务.
+
+### 更新证书
 证书每月`1`日自动更新,请执行以下命令来定时每月重启`nginx`服务刷新证书.也可每月手动执行`docker-compose restart`来重启服务.
 ```shell
 crontab -e
