@@ -222,7 +222,7 @@ get_acme_info () {
         echo -e "${Green}=========================================================================================${Font}"
         echo -e  "${Red}注意: Cloudflare API 有三种:${Font}"
         echo -e  "${Red}请参考 https://github.com/acmesh-official/acme.sh/wiki/dnsapi#1-cloudflare-option 选择.${Font}"
-        echo -e  "${Red}推荐使用第二种: 可参考 https://ssl.ioiox.com/dnsapi.html 获取:${Font}"
+        echo -e  "${Green}推荐使用第二种: 可参考 https://ssl.ioiox.com/dnsapi.html 获取.${Font}"
         echo "1) Using the global API key"
         echo "2) Using the new cloudflare api token"
         echo "3) Using the new cloudflare api token for Single Zone"
