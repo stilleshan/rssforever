@@ -1,4 +1,7 @@
 # rssforever
+## 重要
+**本分支已存档不在维护,请使用`main`分支使用.**
+
 ## 简介
 本项目为 Nginx + TTRSS + RSSHub + Watchtower + ACME 整合 docker 容器化快速一键部署方案,支持一键脚本快速安装部署.
 > *一键安装脚本已同时支持 X86 和 ARM 架构*
@@ -40,7 +43,7 @@
 
 ### 执行脚本
 ```shell
-wget https://raw.githubusercontent.com/stilleshan/rssforever/main/install.sh && chmod +x install.sh && ./install.sh
+wget https://raw.githubusercontent.com/stilleshan/rssforever/ttrss-rsshub/install.sh && chmod +x install.sh && ./install.sh
 ```
 
 ### 定时更新证书
@@ -80,7 +83,7 @@ docker-compose -v
 ### HTTP 部署
 #### 拉取代码
 ```shell
-git clone https://github.com/stilleshan/rssforever.git
+git clone https://github.com/stilleshan/rssforever.git -b ttrss-rsshub
 # 拉取代码
 cd rssforever
 # 进入目录,注意不要修改目录名,否则会导致 watchtower 无法监控容器自动更新镜像.
