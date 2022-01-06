@@ -13,26 +13,22 @@ Font="\033[0m"
 WORK_PATH=$(dirname $(readlink -f $0))
 UNAME=$(uname -m)
 
-
-menu (){
+welcome (){
     clear
     echo -e "${Green}=========================================================================================${Font}"
-    echo -e "${Green}欢迎使用 nginx + ttrss + rsshub + watchtower 一键安装脚本${Font}"
+    echo -e "${Green}欢迎使用 TTRSS / FreshRSS / RSSHub 一键安装脚本${Font}"
     echo -e "${Red}注意:本脚本需要服务器有 docker 和 docker compose 环境${Font}"
-    echo -e "${Green}2021-07-01 更新同时支持 X86 和 ARM 架构${Font}"
+    echo -e "${Green}更新支持 FreshRSS 服务${Font}"
+    echo -e "${Green}更新同时支持 X86 和 ARM 架构${Font}"
     echo -e "${Green}=========================================================================================${Font}"
-    echo "1) nginx + ttrss + rsshub + watchtower"
-    echo "2) nginx + ttrss"
-    echo "3) 退出脚本"
+    echo "1) 开始执行环境检查,确保本服务器满足安装条件."
+    echo "2) 退出脚本"
     read -p "请输入:" CHOICE_INPUT
     case "$CHOICE_INPUT" in
         1)
-        choice1
+        check_env
         ;;
         2)
-        choice2
-        ;;
-        3)
         echo -e "${Red}已退出脚本.${Font}"
         exit 0
         ;;
@@ -42,108 +38,141 @@ menu (){
         esac
 }
 
-
-choice1 (){
-    echo -e "${Green}当前选择 nginx + ttrss + rsshub + watchtower${Font}"
-    echo "1) 全自动申请和续签泛域名证书"
-    echo "2) 无需 SSL 证书"
-    echo "3) 退出脚本"
+check_env (){
     echo -e "${Green}=========================================================================================${Font}"
-    read -p "请输入:" CHOICE1_INPUT
-    case "$CHOICE1_INPUT" in
-        1)
-        confirm_domain
-        conf_ssl $*
-        git_clone
-        conf_env
-        arm_x86_all
-        conf_auto_acme
-        up
-        ;;
-        2)
-        confirm_domain
-        git_clone
-        conf_env
-        remove_acme
-        arm_x86_all
-        up
-        ;;
-        3)
-        echo -e "${Red}已退出脚本.${Font}"
+    echo -e "${Green}开始检查服务器环境${Font}"
+    # if ! type docker >/dev/null 2>&1 ; then
+    #     echo -e "${Red}当前系统 docker 未安装,已退出脚本.${Font}"
+    #     exit 0
+    # fi
+    # if ! type docker-compose >/dev/null 2>&1 ; then
+    #     echo -e "${Red}当前系统 docker-compose 未安装,已退出脚本.${Font}"
+    #     exit 0
+    # fi
+    # if ! type git >/dev/null 2>&1 ; then
+    #     echo -e "${Red}当前系统 git 未安装,已退出脚本.${Font}"
+    #     exit 0
+    # fi
+    if [ -d "${WORK_PATH}/rssforever" ] ; then
+        echo -e "${Red}当前目录存在 rssforever 项目.请更换目录,或删除后再次执行脚本.${Font}"
         exit 0
-        ;;
-        *)
-        echo -e "${Red}输入有误,请重新运行脚本.${Font}"
-        exit 0
-        esac
-}
-
-choice2 (){
-    echo -e "${Green}当前选择 nginx + ttrss${Font}"
-    echo "1) 全自动申请和续签泛域名证书"
-    echo "2) 无需 SSL 证书"
-    echo "3) 退出脚本"
-    echo -e "${Green}=========================================================================================${Font}"
-    read -p "请输入:" CHOICE2_INPUT
-    case "$CHOICE2_INPUT" in
-        1)
-        confirm_domain
-        conf_ssl $*
-        git_clone
-        conf_env
-        remove_rsshub
-        arm_x86_ttrss_only
-        conf_auto_acme
-        up
-        ;;
-        2)
-        confirm_domain
-        git_clone
-        conf_env
-        remove_acme
-        remove_rsshub
-        arm_x86_ttrss_only
-        up
-        ;;
-        3)
-        echo -e "${Red}已退出脚本.${Font}"
-        exit 0
-        ;;
-        *)
-        echo -e "${Red}输入有误,请重新运行脚本.${Font}"
-        exit 0
-        esac 
-}
-
-
-confirm_domain (){
-    clear
-    if [ "${CHOICE1_INPUT}" == "1" ] || [ "${CHOICE2_INPUT}" == "1" ]; then
-        echo -e "${Green}请输入需要申请泛域名证书的根域名(例如:ioiox.com):${Font}"
-        read -p "请输入:" DOMAIN_INPUT
-        if [ ! -n "${DOMAIN_INPUT}" ]; then
-            echo -e "${Red}输入错误,请重新运行脚本.${Font}"
-            exit 0
-        fi
     fi
-    DOMAIN=$DOMAIN_INPUT
-    echo -e "${Green}请输入 ttrss 使用的域名(例如:rss.ioiox.com):${Font}"
+
+    echo -e "${Green}服务器完成检查,开始执行脚本.${Font}"
+    echo -e "${Green}=========================================================================================${Font}"
+    get_info
+}
+
+get_info () {
+    # 选择 RSS 服务
+    echo -e "${Green}选择 RSS 服务${Font}"
+    echo "1) TTRSS"
+    echo "2) FreshRSS"
+    echo "3) 退出脚本"
+    read -p "请输入:" CHOICE_RSS_INPUT
+    case "$CHOICE_RSS_INPUT" in
+        1)
+        RSS="TTRSS"
+        ;;
+        2)
+        RSS="FreshRSS"
+        ;;
+        3)
+        echo -e "${Red}已退出脚本.${Font}"
+        exit 0
+        ;;
+        *)
+        echo -e "${Red}输入有误,请重新运行脚本.${Font}"
+        exit 0
+        esac
+
+    # 选择 RSSHub 服务  
+    echo -e "${Green}选择 RSSHub 服务${Font}"
+    echo "1) 添加 RSSHub 服务"
+    echo "2) 无需添加 RSSHub 服务"
+    echo "3) 退出脚本"
+    read -p "请输入:" CHOICE_RSSHUB_INPUT
+    case "$CHOICE_RSSHUB_INPUT" in
+        1)
+        RSSHUB="yes"
+        RSSHUB_SHOW_INFO="已添加"
+        ;;
+        2)
+        RSSHUB="no"
+        RSSHUB_SHOW_INFO="未添加"
+        ;;
+        3)
+        echo -e "${Red}已退出脚本.${Font}"
+        exit 0
+        ;;
+        *)
+        echo -e "${Red}输入有误,请重新运行脚本.${Font}"
+        exit 0
+        esac
+
+    # 选择 HTTP 协议  
+    echo -e "${Green}选择是否开启 HTTPS 支持${Font}"
+    echo "1) HTTPS 协议"
+    echo "2) HTTP 协议"
+    echo "3) 退出脚本"
+    read -p "请输入:" CHOICE_PROTOCOL_INPUT
+    case "$CHOICE_PROTOCOL_INPUT" in
+        1)
+        PROTOCOL="https"
+        ;;
+        2)
+        PROTOCOL="http"
+        ;;
+        3)
+        echo -e "${Red}已退出脚本.${Font}"
+        exit 0
+        ;;
+        *)
+        echo -e "${Red}输入有误,请重新运行脚本.${Font}"
+        exit 0
+        esac
+
+    if [ "${RSSHUB}" == "yes" ] && [ "${PROTOCOL}" == "https" ]; then
+        echo -e "${Green}注意:本脚本自带申请域名证书功能. RSS 和 RSSHub 必须为同一域名的子域名.${Font}"
+    fi 
+
+    # 输入 RSS 域名信息
+    echo -e "${Green}请输入 RSS 使用的域名(例如:rss.ioiox.com):${Font}"
     read -p "请输入:" RSS_DOMAIN_INPUT
     if [ ! -n "${RSS_DOMAIN_INPUT}" ]; then
         echo -e "${Red}输入错误,请重新运行脚本.${Font}"
         exit 0
     fi
-    if [ "${CHOICE_INPUT}" == "1" ] ; then
-        echo -e "${Green}请输入 rsshub 使用的域名(例如:rsshub.ioiox.com):${Font}"
+    RSS_DOMAIN=$RSS_DOMAIN_INPUT
+
+    # 输入 RSSHub 域名信息
+    if [ "${RSSHUB}" == "yes" ] ; then
+        echo -e "${Green}请输入 RSSHub 使用的域名(例如:rsshub.ioiox.com):${Font}"
         read -p "请输入:" RSSHUB_DOMAIN_INPUT
         if [ ! -n "${RSSHUB_DOMAIN_INPUT}" ]; then
             echo -e "${Red}输入错误,请重新运行脚本.${Font}"
             exit 0
         fi
+        RSSHUB_DOMAIN=$RSSHUB_DOMAIN_INPUT
+    fi
+
+    if [ "${PROTOCOL}" == "https" ] ; then
+        get_acme_info
+    else
+        show_info
     fi
 }
 
-conf_ssl (){
+get_acme_info () {
+    echo -e "${Green}输入主域名用于部署和申请证书${Font}"
+    echo -e "${Green}请输入需要申请泛域名证书的根域名(例如:ioiox.com):${Font}"
+    read -p "请输入:" DOMAIN_INPUT
+    if [ ! -n "${DOMAIN_INPUT}" ]; then
+        echo -e "${Red}输入错误,请重新运行脚本.${Font}"
+        exit 0
+    fi
+    DOMAIN=$DOMAIN_INPUT
+    # 输入域名服务商信息
     echo -e "${Green}请选择域名服务商:${Font}"
     echo -e "1) 腾讯云 dnspod.cn"
     echo -e "2) 阿里云 aliyun"
@@ -151,13 +180,13 @@ conf_ssl (){
     read -p "请选择:" DNSAPI_INPUT
     case "$DNSAPI_INPUT" in
         1)
-        PLATFORM_NAME='dnspod.cn'
+        PLATFORM_NAME='腾讯云'
         DNSAPI='dns_dp'
         API_ID_HEADER='DP_Id'
         API_KEY_HEADER='DP_Key'
         ;;
         2)
-        PLATFORM_NAME='aliyun'
+        PLATFORM_NAME='阿里云'
         DNSAPI='dns_ali'
         API_ID_HEADER='Ali_Key'
         API_KEY_HEADER='Ali_Secret'
@@ -173,6 +202,7 @@ conf_ssl (){
         echo -e "${Green}=========================================================================================${Font}"
         echo -e  "${Red}注意: Cloudflare API 有三种:${Font}"
         echo -e  "${Red}请参考 https://github.com/acmesh-official/acme.sh/wiki/dnsapi#1-cloudflare-option 选择.${Font}"
+        echo -e  "${Red}推荐使用第二种: 可参考 https://ssl.ioiox.com/dnsapi.html 获取:${Font}"
         echo "1) Using the global API key"
         echo "2) Using the new cloudflare api token"
         echo "3) Using the new cloudflare api token for Single Zone"
@@ -210,15 +240,29 @@ conf_ssl (){
         read -p "请输入 $API_ZONE_HEADER :" API_ZONE_HEADER_INPUT
     fi
 
+    show_info
 
+}
+
+
+show_info (){
     echo -e "${Green}=========================================================================================${Font}"
     echo -e "${Red}请确认以下信息正确无误!${Font}"
-    echo -e "${Green}域名: ${Font}${Red}${DOMAIN}${Font}"
-    echo -e "${Green}域名服务商: ${Font}${Red}${PLATFORM_NAME}${Font}"
-    echo -e "${Green}${API_ID_HEADER}:${Font} ${Red}${API_ID_INPUT}${Font}"
-    echo -e "${Green}${API_KEY_HEADER}:${Font} ${Red}${API_KEY_INPUT}${Font}"
-    if [ "$CHOICE_CLOUDFLARE_INPUT" == "3" ]; then
-        echo -e "${Green}${API_ZONE_HEADER}:${Font} ${Red}${API_ZONE_HEADER_INPUT}${Font}"
+    echo -e "${Green}当前服务器架构为${Font} ${Red}$UNAME${Font}"
+    echo -e "${Green}RSS 服务为${Font} ${Red}${RSS}${Font}"
+    echo -e "${Green}RSSHub 服务${Font} ${Red}${RSSHUB_SHOW_INFO}${Font}"
+    echo -e "${Green}RSS 域名为${Font} ${Red} ${RSS_DOMAIN}${Font}"
+    if [ "${RSSHUB}" == "yes" ] ; then
+        echo -e "${Green}RSSHub 域名为${Font} ${Red}${RSSHUB_DOMAIN}${Font}"
+    fi
+    if [ "${PROTOCOL}" == "https" ] ; then
+        echo -e "${Green}申请泛域名证书${Font} ${Red}$DOMAIN${Font}"
+        echo -e "${Green}域名服务商: ${Font}${Red}${PLATFORM_NAME}${Font}"
+        echo -e "${Green}${API_ID_HEADER}:${Font} ${Red}${API_ID_INPUT}${Font}"
+        echo -e "${Green}${API_KEY_HEADER}:${Font} ${Red}${API_KEY_INPUT}${Font}"
+        if [ "$CHOICE_CLOUDFLARE_INPUT" == "3" ]; then
+            echo -e "${Green}${API_ZONE_HEADER}:${Font} ${Red}${API_ZONE_HEADER_INPUT}${Font}"
+        fi
     fi
     echo -e "${Red}请再次确认以上信息正确无误!${Font}"
     echo -e "${Green}=========================================================================================${Font}"
@@ -228,7 +272,7 @@ conf_ssl (){
     case "$START_INPUT" in
         1)
         echo -e "${Green}开始部署中......${Font}"
-        acme $*
+        start
         ;;
         2)
         exit 0
@@ -239,7 +283,16 @@ conf_ssl (){
         esac
 }
 
-acme (){
+start () {
+    if [ "${PROTOCOL}" == "https" ]; then
+        acme
+    else
+        git_clone
+    fi
+}
+
+
+acme () {
     TEMP=${RANDOM}
     mkdir -p ${WORK_PATH}/${TEMP}
     cat >${WORK_PATH}/${TEMP}/account.conf<<EOF
@@ -272,24 +325,31 @@ EOF
     if [ ! -f "${WORK_PATH}/${TEMP}/${DOMAIN}/fullchain.cer" ] ; then
         echo -e "${Green}证书申请失败,请重新尝试,已退出脚本.${Font}"
         exit 0
+    else
+        echo -e "${Green}证书申请成功,开始部署.${Font}"
+        git_clone
     fi
 }
 
 git_clone (){
     git clone https://github.com/stilleshan/rssforever.git
+    conf_domain
 }
 
-conf_env (){
+
+conf_domain (){
     sed -i \
-        -e "/rss.yourdomain.com/s/rss.yourdomain.com/${RSS_DOMAIN_INPUT}/g" \
+        -e "/rss.yourdomain.com/s/rss.yourdomain.com/${RSS_DOMAIN}/g" \
         -e "/rssforever.com/s/rssforever.com/rssforever.com-${TEMP}/g" \
         ${WORK_PATH}/rssforever/.env
 
-    if [ "${CHOICE_INPUT}" == "1" ] ; then
-        sed -i "/rsshub.yourdomain.com/s/rsshub.yourdomain.com/${RSSHUB_DOMAIN_INPUT}/g" ${WORK_PATH}/rssforever/.env
+    if [ "${RSSHUB}" == "yes" ] ; then
+        sed -i "/rsshub.yourdomain.com/s/rsshub.yourdomain.com/${RSSHUB_DOMAIN}/g" ${WORK_PATH}/rssforever/.env
+    else
+        mv ${WORK_PATH}/rssforever/nginx/vhost/rsshub.conf ${WORK_PATH}/rssforever/nginx/vhost/rsshub.conf.bak
     fi
 
-    if [ "${CHOICE1_INPUT}" == "1" ] || [ "${CHOICE2_INPUT}" == "1" ]; then
+    if [ "${PROTOCOL}" == "https" ] ; then
         cp ${WORK_PATH}/${TEMP}/${DOMAIN}/fullchain.cer ${WORK_PATH}/rssforever/nginx/ssl/${DOMAIN}.cer
         cp ${WORK_PATH}/${TEMP}/${DOMAIN}/${DOMAIN}.key ${WORK_PATH}/rssforever/nginx/ssl
         sed -i \
@@ -298,13 +358,9 @@ conf_env (){
             -e "/yourdomain.com.key/s/yourdomain.com.key/${DOMAIN}.key/g" \
             ${WORK_PATH}/rssforever/.env
             rm -rf ${WORK_PATH}/${TEMP}
+        conf_auto_acme
     fi
-}
-
-remove_rsshub (){
-    sed -i '80,131d' ${WORK_PATH}/rssforever/docker-compose.yml
-    sed -i '34d' ${WORK_PATH}/rssforever/docker-compose.yml
-    mv ${WORK_PATH}/rssforever/nginx/vhost/rsshub.conf ${WORK_PATH}/rssforever/nginx/vhost/rsshub.conf.bak
+    set_deploy
 }
 
 conf_auto_acme (){
@@ -319,57 +375,68 @@ EOF
     fi
 }
 
-remove_acme (){
-    sed -i '133,143d' ${WORK_PATH}/rssforever/docker-compose.yml
-}
-
-arm_x86_all (){
-    echo "Check X86 or ARM"
-    if [ ! $UNAME == "x86_64" ] ; then
-        sed -i '98,104d' ${WORK_PATH}/rssforever/docker-compose.yml
-        sed -i '53,68d' ${WORK_PATH}/rssforever/docker-compose.yml
-        sed -i '/PUPPETEER_WS_ENDPOINT/d' ${WORK_PATH}/rssforever/docker-compose.yml
-        sed -i '/- browserless/d' ${WORK_PATH}/rssforever/docker-compose.yml
+set_deploy () {
+    if [ "${RSS}" == "TTRSS" ]; then
+        if [ "${RSSHUB}" == "yes" ]; then
+            if [ "${PROTOCOL}" == "https" ]; then
+                COMPOSE_FILE="ttrss-rsshub-https.yml"
+                SUCCESS_MSG="TTRSS / RSSHub / HTTPS"
+            fi
+            if [ "${PROTOCOL}" == "http" ]; then
+                COMPOSE_FILE="ttrss-rsshub-http.yml"
+                SUCCESS_MSG="TTRSS / RSSHub / HTTP"
+            fi
+        fi
+        if [ "${RSSHUB}" == "no" ]; then
+            if [ "${PROTOCOL}" == "https" ]; then
+                COMPOSE_FILE="ttrss-https.yml"
+                SUCCESS_MSG="TTRSS / HTTPS"
+            fi
+            if [ "${PROTOCOL}" == "http" ]; then
+                COMPOSE_FILE="ttrss-http.yml"
+                SUCCESS_MSG="TTRSS / HTTP"
+            fi
+        fi
     fi
-}
 
-arm_x86_ttrss_only (){
-    echo "Check X86 or ARM"
-    if [ ! $UNAME == "x86_64" ] ; then
-        sed -i '53,68d' ${WORK_PATH}/rssforever/docker-compose.yml
+    if [ "${RSS}" == "FreshRSS" ]; then
+        if [ "${RSSHUB}" == "yes" ]; then
+            if [ "${PROTOCOL}" == "https" ]; then
+                COMPOSE_FILE="freshrss-rsshub-https.yml"
+                SUCCESS_MSG="FreshRSS / RSSHub / HTTPS"
+            fi
+            if [ "${PROTOCOL}" == "http" ]; then
+                COMPOSE_FILE="freshrss-rsshub-http.yml"
+                SUCCESS_MSG="FreshRSS / RSSHub / HTTP"
+            fi
+        fi
+        if [ "${RSSHUB}" == "no" ]; then
+            if [ "${PROTOCOL}" == "https" ]; then
+                COMPOSE_FILE="freshrss-https.yml"
+                SUCCESS_MSG="FreshRSS / HTTPS"
+            fi
+            if [ "${PROTOCOL}" == "http" ]; then
+                COMPOSE_FILE="freshrss-http.yml"
+                SUCCESS_MSG="FreshRSS / HTTP"
+            fi
+        fi
     fi
+    up
 }
 
-up (){
+up () {
     cd ${WORK_PATH}/rssforever
-    docker-compose up -d
-    if [ "$CHOICE1_INPUT" == "1" ]; then
-        echo -e "${Green}nginx + ttrss + rsshub + watchtower + acme 部署完毕${Font}"
-        elif [ "$CHOICE1_INPUT" == "2" ]; then
-            echo -e "${Green}nginx + ttrss + rsshub + watchtower 部署完毕${Font}"
-        elif [ "$CHOICE2_INPUT" == "1" ]; then
-            echo -e "${Green}nginx + ttrss + acme 部署完毕${Font}"
-        elif [ "$CHOICE2_INPUT" == "2" ]; then
-            echo -e "${Green}nginx + ttrss 部署完毕${Font}"
+    if [ "${UNAME}" == "x86_64" ]; then
+        ARCH=x86
+        ARCH_UPCASE=X86
+    else
+        ARCH=arm
+        ARCH_UPCASE=ARM
     fi
+    cp ${WORK_PATH}/compose_files/${ARCH}/${COMPOSE_FILE} ./docker-compose.yml
+    docker-compose up -d
     cd ${WORK_PATH}/
+    echo -e "${Green}${SUCCESS_MSG} / ${ARCH_UPCASE} 部署成功${Font}"
 }
 
-
-if ! type docker-compose >/dev/null 2>&1 ; then
-    echo -e "${Red}本机未安装 docker compose 已退出脚本.${Font}";
-    exit 0
-fi
-
-if ! type git >/dev/null 2>&1 ; then
-    echo -e "${Red}本机未安装 git 已退出脚本.${Font}"
-    exit
-fi
-
-if [ -d "${WORK_PATH}/rssforever" ] ; then
-    echo -e "${Green}当前目录存在 rssforever 项目.请更换目录,或删除后再次执行脚本.${Font}"
-    exit 0
-fi
-
-menu $*
-rm $0
+welcome

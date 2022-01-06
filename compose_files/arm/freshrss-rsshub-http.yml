@@ -36,46 +36,31 @@ services:
 
 
 # ---------------------------------------- ttrss ---------------------------------------- #
-  service.rss:
-    image: ${TTRSS_IMAGE}:${TTRSS_VERSION}
-    environment:
-      - SELF_URL_PATH=${PROTOCOL}://${RSS_DOMAIN}
-      - DB_PASS=${POSTGRES_PASSWORD}
-      - PUID=1000
-      - PGID=1000
-      - ENABLE_PLUGINS=auth_internal,remove_iframe_sandbox
-    networks:
-      - rssforever
-    stdin_open: true
-    tty: true
-    restart: always
-    
-
-  service.mercury: 
-    image: wangqiru/mercury-parser-api:latest
-    networks:
-      - rssforever
-    restart: always
-    
-
-  service.opencc:
-    image: wangqiru/opencc-api-server:latest
-    environment:
-      - NODE_ENV=production
-    networks:
-      - rssforever
-    restart: always
-    
-
-  database.postgres:
-    image: postgres:13-alpine
-    environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  freshrss-db:
+    image: postgres:12-alpine
+    # container_name: freshrss-db
+    hostname: freshrss-db
+    restart: unless-stopped
     volumes:
-      - ./rss/postgres/data/:/var/lib/postgresql/data
-    networks:
-      - rssforever
-    restart: always
+      - ./db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-freshrss}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-freshrss}
+      POSTGRES_DB: ${POSTGRES_DB:-freshrss}
+
+  service.rss:
+    image: freshrss/freshrss:latest-arm
+    # container_name: freshrss-app
+    hostname: freshrss-app
+    restart: unless-stopped
+    depends_on:
+      - freshrss-db
+    volumes:
+      - ./data:/var/www/FreshRSS/data
+      - ./extensions:/var/www/FreshRSS/extensions
+    environment:
+      CRON_MIN: '*/20'
+      TZ: Asia/Shanghai
 
 
 # ---------------------------------------- rsshub ---------------------------------------- #
@@ -88,20 +73,11 @@ services:
       NODE_ENV: production
       CACHE_TYPE: redis
       REDIS_URL: 'redis://redis:6379/'
-      PUPPETEER_WS_ENDPOINT: 'ws://browserless:3000'
     depends_on:
       - redis
-      - browserless
     networks:
       - rssforever
     
-
-  browserless:
-    image: browserless/chrome
-    restart: always
-    networks:
-      - rssforever
-
 
   redis:
     image: redis:alpine
@@ -125,19 +101,7 @@ services:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_SCHEDULE=0 0 10 * * *
     restart: always
-    command: rssforever_watchtower_1 rssforever_rsshub_1 rssforever_redis_1 rssforever_browserless_1 rssforever_acme_1
+    command: rssforever-watchtower-1 rssforever_rsshub-1 rssforever_redis-1 rssforever_browserless-1 rssforever_acme-1
     networks:
       - rssforever
-
-
-# ---------------------------------------- acme.sh ---------------------------------------- #
-  acme:
-    image: neilpang/acme.sh
-    # container_name: acme
-    volumes:
-      - ./acme:/conf
-      - ./nginx/ssl:/ssl
-    restart: always
-    network_mode: host
-    command: ["sh", "-c", "/conf/start.sh"]
 

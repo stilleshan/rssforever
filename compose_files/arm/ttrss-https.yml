@@ -1,0 +1,73 @@
+version: "3"
+
+
+networks:
+  rssforever:
+
+
+# ---------------------------------------- nginx ---------------------------------------- #
+services:
+  nginx:
+    image: nginx:${NGINX_VERSION}
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf/nginx.sh:/nginx.sh
+      - ./nginx/vhost:/etc/nginx/conf.d/vhost
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/html:/usr/share/nginx/html
+    environment:
+      - PROTOCOL=${PROTOCOL}
+      - RSS_DOMAIN=${RSS_DOMAIN}
+      - RSS_DOAMIN_CERT=${RSS_DOAMIN_CERT}
+      - RSS_DOMAIN_KEY=${RSS_DOMAIN_KEY}
+      - RSSHUB_DOMAIN=${RSSHUB_DOMAIN}
+      - RSSHUB_DOAMIN_CERT=${RSSHUB_DOAMIN_CERT}
+      - RSSHUB_DOMAIN_KEY=${RSSHUB_DOMAIN_KEY}
+    networks:
+      - rssforever
+    depends_on:
+      - service.rss
+    command: ["sh", "-c", "/nginx.sh"]
+
+
+# ---------------------------------------- ttrss ---------------------------------------- #
+  service.rss:
+    image: ${TTRSS_IMAGE}:${TTRSS_VERSION}
+    environment:
+      - SELF_URL_PATH=${PROTOCOL}://${RSS_DOMAIN}
+      - DB_PASS=${POSTGRES_PASSWORD}
+      - PUID=1000
+      - PGID=1000
+      - ENABLE_PLUGINS=auth_internal,remove_iframe_sandbox
+    networks:
+      - rssforever
+    stdin_open: true
+    tty: true
+    restart: always
+    
+
+  database.postgres:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./rss/postgres/data/:/var/lib/postgresql/data
+    networks:
+      - rssforever
+    restart: always
+
+# ---------------------------------------- acme.sh ---------------------------------------- #
+  acme:
+    image: neilpang/acme.sh
+    # container_name: acme
+    volumes:
+      - ./acme:/conf
+      - ./nginx/ssl:/ssl
+    restart: always
+    network_mode: host
+    command: ["sh", "-c", "/conf/start.sh"]
+
