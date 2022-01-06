@@ -40,7 +40,7 @@
 
 ### 前期准备
 - 准备 RSS 和 RSSHub 域名并解析至服务器
-- 参考[这里](https://ssl.ioiox.com/dnsapi.html)获取域名 DNSAPI 以便脚本申请证书
+- 参考 [Wiki 页面](https://github.com/stilleshan/rssforever/wiki/dnsapi) 获取域名 DNSAPI 以便脚本申请证书
 
 ### 执行脚本
 ```shell
@@ -59,7 +59,7 @@ FreshRSS 首次访问需要设置数据库,选择`PostgreSQL`:
 - 密码 在`rssforever`目录下的`.env`中`POSTGRES_PASSWORD`变量的值`rssforever.com-xxxxx`为数据库密码
 - 数据库 freshrss
 
-![snapshot01.jpg](./snapshot01.jpg)
+![snapshot01.jpg](images/snapshot01.jpg)
 
 ### docker compose 版本
 建议将 docker compose 版本升级到 v2.x.x 以上,建议 v2.2.2 版本.
