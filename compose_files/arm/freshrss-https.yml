@@ -48,7 +48,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-freshrss}
 
   service.rss:
-    image: freshrss/freshrss:latest-arm
+    image: freshrss/freshrss:arm
     # container_name: freshrss-app
     hostname: freshrss-app
     restart: unless-stopped
