@@ -172,6 +172,26 @@ get_acme_info () {
         exit 0
     fi
     DOMAIN=$DOMAIN_INPUT
+
+    # 选择证书机构
+    echo -e "${Green}请选择域名证书颁发机构:${Font}"
+    echo -e "1) ZeroSSL"
+    echo -e "2) Let's Encrypt"
+    read -p "请选择:" AGENCY_INPUT
+    case "$AGENCY_INPUT" in
+        1)
+        AGENCY='zerossl'
+        AGENCY_SHOW_INFO='ZeroSSL'
+        ;;
+        2)
+        AGENCY='letsencrypt'
+        AGENCY_SHOW_INFO="Let\'s Encrypt"
+        ;;
+        *)
+        echo -e "${Red}输入错误,请重新运行脚本.${Font}"
+        exit 0
+        esac
+
     # 输入域名服务商信息
     echo -e "${Green}请选择域名服务商:${Font}"
     echo -e "1) 腾讯云 dnspod.cn"
@@ -257,6 +277,7 @@ show_info (){
     fi
     if [ "${PROTOCOL}" == "https" ] ; then
         echo -e "${Green}申请泛域名证书${Font} ${Red}$DOMAIN${Font}"
+        echo -e "${Green}证书颁发机构${Font} ${Red}$AGENCY_SHOW_INFO${Font}"
         echo -e "${Green}域名服务商: ${Font}${Red}${PLATFORM_NAME}${Font}"
         echo -e "${Green}${API_ID_HEADER}:${Font} ${Red}${API_ID_INPUT}${Font}"
         echo -e "${Green}${API_KEY_HEADER}:${Font} ${Red}${API_KEY_INPUT}${Font}"
@@ -315,7 +336,14 @@ EOF
     docker exec ${TEMP} --upgrade
 
     echo -e "${Green}开始申请证书${Font}"
+    if [ $AGENCY == "zerossl" ]; then
+    docker exec ${TEMP} --register-account -m your@domain.com --server zerossl
     docker exec ${TEMP} --issue --server letsencrypt $* --dns ${DNSAPI} -d ${DOMAIN} -d \*.${DOMAIN}
+    fi
+
+    if [ $AGENCY == "letsencrypt" ]; then
+    docker exec ${TEMP} --issue --server letsencrypt $* --dns ${DNSAPI} -d ${DOMAIN} -d \*.${DOMAIN}
+    fi
 
     # clean
     docker stop ${TEMP} >/dev/null 2>&1
@@ -433,7 +461,7 @@ up () {
         ARCH=arm
         ARCH_UPCASE=ARM
     fi
-    cp ${WORK_PATH}/compose_files/${ARCH}/${COMPOSE_FILE} ./docker-compose.yml
+    cp compose_files/${ARCH}/${COMPOSE_FILE} ./docker-compose.yml
     docker-compose up -d
     cd ${WORK_PATH}/
     echo -e "${Green}${SUCCESS_MSG} / ${ARCH_UPCASE} 部署成功${Font}"
