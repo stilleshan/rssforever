@@ -12,6 +12,7 @@ Font="\033[0m"
 
 WORK_PATH=$(dirname $(readlink -f $0))
 UNAME=$(uname -m)
+TEMP=${RANDOM}
 
 welcome (){
     clear
@@ -314,7 +315,6 @@ start () {
 
 
 acme () {
-    TEMP=${RANDOM}
     mkdir -p ${WORK_PATH}/${TEMP}
     cat >${WORK_PATH}/${TEMP}/account.conf<<EOF
 export ${API_ID_HEADER}="${API_ID_INPUT}"
