@@ -36,10 +36,10 @@ services:
 
 
 # ---------------------------------------- ttrss ---------------------------------------- #
-  freshrss-db:
+  freshrss.db:
     image: postgres:12-alpine
-    # container_name: freshrss-db
-    hostname: freshrss-db
+    # container_name: freshrss.db
+    hostname: freshrss.db
     restart: unless-stopped
     volumes:
       - ./db:/var/lib/postgresql/data
@@ -54,7 +54,7 @@ services:
     hostname: freshrss-app
     restart: unless-stopped
     depends_on:
-      - freshrss-db
+      - freshrss.db
     volumes:
       - ./data:/var/www/FreshRSS/data
       - ./extensions:/var/www/FreshRSS/extensions
