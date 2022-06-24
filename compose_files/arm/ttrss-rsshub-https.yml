@@ -77,6 +77,11 @@ services:
     networks:
       - rssforever
     
+  browserless:
+    image: browserless/chrome
+    restart: always
+    networks:
+      - rssforever
 
   redis:
     image: redis:alpine
