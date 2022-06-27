@@ -80,7 +80,6 @@ services:
 # ---------------------------------------- acme.sh ---------------------------------------- #
   acme:
     image: neilpang/acme.sh
-    # container_name: acme
     volumes:
       - ./acme:/conf
       - ./nginx/ssl:/ssl

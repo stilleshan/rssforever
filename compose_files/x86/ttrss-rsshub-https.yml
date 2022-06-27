@@ -125,7 +125,7 @@ services:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_SCHEDULE=0 0 10 * * *
     restart: always
-    command: rssforever_acme-1 rssforever_watchtower_1 rssforever_rsshub_1 rssforever_redis_1 rssforever_browserless_1 rssforever_acme_1 rssforever-watchtower-1 rssforever_rsshub-1 rssforever_redis-1 rssforever_browserless-1
+    command: rssforever-acme-1 rssforever-watchtower-1 rssforever-rsshub-1 rssforever-redis-1 rssforever-browserless-1
     networks:
       - rssforever
 
@@ -133,7 +133,6 @@ services:
 # ---------------------------------------- acme.sh ---------------------------------------- #
   acme:
     image: neilpang/acme.sh
-    # container_name: acme
     volumes:
       - ./acme:/conf
       - ./nginx/ssl:/ssl

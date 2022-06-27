@@ -37,7 +37,6 @@ services:
 # ---------------------------------------- ttrss ---------------------------------------- #
   freshrss.db:
     image: postgres:12-alpine
-    # container_name: freshrss.db
     hostname: freshrss.db
     restart: unless-stopped
     volumes:
@@ -51,7 +50,6 @@ services:
 
   service.rss:
     image: freshrss/freshrss:${FRESHRSS_X86_VERSION}
-    # container_name: freshrss-app
     hostname: freshrss-app
     restart: unless-stopped
     depends_on:
@@ -68,7 +66,6 @@ services:
 # ---------------------------------------- acme.sh ---------------------------------------- #
   acme:
     image: neilpang/acme.sh
-    # container_name: acme
     volumes:
       - ./acme:/conf
       - ./nginx/ssl:/ssl
