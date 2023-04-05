@@ -338,7 +338,7 @@ EOF
     echo -e "${Green}开始申请证书${Font}"
     if [ $AGENCY == "zerossl" ]; then
     docker exec ${TEMP} --register-account -m your@domain.com --server zerossl
-    docker exec ${TEMP} --issue --keylength 2048 --server letsencrypt $* --dns ${DNSAPI} -d ${DOMAIN} -d \*.${DOMAIN}
+    docker exec ${TEMP} --issue --keylength 2048 --server zerossl $* --dns ${DNSAPI} -d ${DOMAIN} -d \*.${DOMAIN}
     fi
 
     if [ $AGENCY == "letsencrypt" ]; then
