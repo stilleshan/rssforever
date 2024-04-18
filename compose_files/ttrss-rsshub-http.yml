@@ -1,9 +1,7 @@
 version: "3"
 
-
 networks:
   rssforever:
-
 
 # ---------------------------------------- nginx ---------------------------------------- #
 services:
@@ -31,39 +29,38 @@ services:
       - rssforever
     depends_on:
       - service.rss
-      - rsshub
     command: ["sh", "-c", "/nginx.sh"]
 
+# ---------------------------------------- rss ---------------------------------------- #
+  service.rss:
+    image: ${TTRSS_IMAGE}:${TTRSS_VERSION}
+    environment:
+      - SELF_URL_PATH=${PROTOCOL}://${RSS_DOMAIN}
+      - DB_PASS=${POSTGRES_PASSWORD}
+      - PUID=1000
+      - PGID=1000
+      - ENABLE_PLUGINS=auth_internal,remove_iframe_sandbox
+    networks:
+      - rssforever
+    stdin_open: true
+    tty: true
+    restart: always
 
-# ---------------------------------------- ttrss ---------------------------------------- #
-  freshrss.db:
-    image: postgres:12-alpine
-    hostname: freshrss.db
-    restart: unless-stopped
+  database.postgres:
+    image: postgres:${TTRSS_DB_VERSION}
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./db:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-freshrss}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-freshrss}
-      POSTGRES_DB: ${POSTGRES_DB:-freshrss}
     networks:
       - rssforever
+    restart: always
 
-  service.rss:
-    image: freshrss/freshrss:${FRESHRSS_ARM_VERSION}
-    hostname: freshrss-app
-    restart: unless-stopped
-    depends_on:
-      - freshrss.db
-    volumes:
-      - ./data:/var/www/FreshRSS/data
-      - ./extensions:/var/www/FreshRSS/extensions
-    environment:
-      CRON_MIN: '*/20'
-      TZ: Asia/Shanghai
+  service.mercury: 
+    image: wangqiru/mercury-parser-api:latest
     networks:
       - rssforever
-
+    restart: always
 
 # ---------------------------------------- rsshub ---------------------------------------- #
   rsshub:
@@ -79,7 +76,7 @@ services:
       - redis
     networks:
       - rssforever
-    
+
   browserless:
     image: browserless/chrome
     restart: always
@@ -95,7 +92,6 @@ services:
       - ./rsshub/redis-data:/data
     networks:
       - rssforever
-    
 
 # ---------------------------------------- watchtower ---------------------------------------- #
 # 每天早上 10 点定时更新 RSSHub , 如无需可注释或删除本段.
@@ -111,4 +107,3 @@ services:
     command: rssforever-acme-1 rssforever-watchtower-1 rssforever-rsshub-1 rssforever-redis-1 rssforever-browserless-1
     networks:
       - rssforever
-

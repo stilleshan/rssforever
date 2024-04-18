@@ -1,9 +1,7 @@
 version: "3"
 
-
 networks:
   rssforever:
-
 
 # ---------------------------------------- nginx ---------------------------------------- #
 services:
@@ -33,27 +31,12 @@ services:
       - service.rss
     command: ["sh", "-c", "/nginx.sh"]
 
-
-# ---------------------------------------- ttrss ---------------------------------------- #
-  freshrss.db:
-    image: postgres:12-alpine
-    hostname: freshrss.db
-    restart: unless-stopped
-    volumes:
-      - ./db:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-freshrss}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-freshrss}
-      POSTGRES_DB: ${POSTGRES_DB:-freshrss}
-    networks:
-      - rssforever
-
+# ---------------------------------------- rss ---------------------------------------- #
   service.rss:
-    image: freshrss/freshrss:${FRESHRSS_ARM_VERSION}
-    hostname: freshrss-app
-    restart: unless-stopped
+    image: ${FRESHRSS_IMAGE}:${FRESHRSS_VERSION}
+    restart: always
     depends_on:
-      - freshrss.db
+      - db
     volumes:
       - ./data:/var/www/FreshRSS/data
       - ./extensions:/var/www/FreshRSS/extensions
@@ -63,3 +46,14 @@ services:
     networks:
       - rssforever
 
+  db:
+    image: postgres:${FRESHRSS_DB_VERSION}
+    restart: always
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: freshrss
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-freshrss}
+      POSTGRES_DB: freshrss
+    networks:
+      - rssforever

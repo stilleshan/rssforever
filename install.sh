@@ -454,14 +454,7 @@ set_deploy () {
 
 up () {
     cd ${WORK_PATH}/rssforever
-    if [ "${UNAME}" == "x86_64" ]; then
-        ARCH=x86
-        ARCH_UPCASE=X86
-    else
-        ARCH=arm
-        ARCH_UPCASE=ARM
-    fi
-    cp compose_files/${ARCH}/${COMPOSE_FILE} ./docker-compose.yml
+    cp compose_files/${COMPOSE_FILE} ./docker-compose.yml
     docker-compose up -d
     cd ${WORK_PATH}/
     echo -e "${Green}${SUCCESS_MSG} / ${ARCH_UPCASE} 部署成功${Font}"

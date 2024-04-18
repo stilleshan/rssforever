@@ -34,6 +34,7 @@
 
 ## 安装
 ### 更新
+- **2024-04-18** 更新至最新版本.
 - **2022-01-06** 更新脚本支持 FreshRSS, 老版本已转移至`ttrss-rsshub`分支,同样也可以继续使用.
 - **2021-07-01** 更新一键安装脚本同时支持 X86 和 ARM 架构.
 - **2021-06-18** 更新一键安装脚本.
@@ -53,16 +54,15 @@ wget https://raw.githubusercontent.com/stilleshan/rssforever/main/install.sh && 
 默认密码: password
 
 ### FreshRSS
-FreshRSS 首次访问需要设置数据库,选择`PostgreSQL`:
-- 主机 freshrss.db
-- 用户名 freshrss
-- 密码 在`rssforever`目录下的`.env`中`POSTGRES_PASSWORD`变量的值`rssforever.com-xxxxx`为数据库密码
-- 数据库 freshrss
+FreshRSS 首次访问需要设置数据库类型,选择`PostgreSQL`:
+- 数据库类型：`PostgreSQL`
+- 主机：`db`（不要随意修改，这里的主机名 db 已在 docker-compose.yml 中定义为服务名）
+- 数据库用户名：`freshrss`（不要随意修改，这里的用户名已在 docker-compose.yml 中定义）
+- 数据库密码：脚本随机生成在`rssforever`目录下的`.env`中`POSTGRES_PASSWORD`变量的值`rssforever.com-xxxxx`为数据库密码
+- 数据库：`freshrss`（不要随意修改，这里的数据库名已在 docker-compose.yml 中定义）
+- 表前缀：可留空或填写`freshrss_`
 
 ![snapshot01.jpg](images/snapshot01.jpg)
-
-### docker compose 版本
-建议将 docker compose 版本升级到 v2.x.x 以上,建议 v2.2.2 版本.
 
 ### 更新镜像
 本项目配置有`Watchtower`来监控部分容器的镜像更新.  
@@ -80,8 +80,15 @@ crontab -e
 
 ### 备份恢复
 #### 备份
-本项目采用 docker compose 部署,所有配置及数据都在`rssforever`目录中,方便备份和迁移.  
-**其他所有文件及目录,如不清楚请不要随意修改和删除,否则会导致服务无法启动.**
+本项目采用 docker compose 部署,所有配置及数据都在`rssforever`目录中,方便备份和迁移.
+**rssforever 目录下的文件如不清楚请不要随意修改和删除,否则会导致服务无法启动.**
+```shell
+cd rssforever
+# 进入目录
+docker-compose down
+# 停止所有服务
+# 手动将整个 rssforever 目录迁移至新服务
+```
 #### 恢复
 将域名重新指向新服务器,将备份的`rssforever`目录解压进入启动即可.
 ```shell

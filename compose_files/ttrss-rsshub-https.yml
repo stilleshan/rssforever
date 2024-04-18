@@ -1,9 +1,7 @@
 version: "3"
 
-
 networks:
   rssforever:
-
 
 # ---------------------------------------- nginx ---------------------------------------- #
 services:
@@ -31,11 +29,9 @@ services:
       - rssforever
     depends_on:
       - service.rss
-      - rsshub
     command: ["sh", "-c", "/nginx.sh"]
 
-
-# ---------------------------------------- ttrss ---------------------------------------- #
+# ---------------------------------------- rss ---------------------------------------- #
   service.rss:
     image: ${TTRSS_IMAGE}:${TTRSS_VERSION}
     environment:
@@ -49,34 +45,22 @@ services:
     stdin_open: true
     tty: true
     restart: always
-    
+
+  database.postgres:
+    image: postgres:${TTRSS_DB_VERSION}
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    networks:
+      - rssforever
+    restart: always
 
   service.mercury: 
     image: wangqiru/mercury-parser-api:latest
     networks:
       - rssforever
     restart: always
-    
-
-  service.opencc:
-    image: wangqiru/opencc-api-server:latest
-    environment:
-      - NODE_ENV=production
-    networks:
-      - rssforever
-    restart: always
-    
-
-  database.postgres:
-    image: postgres:13-alpine
-    environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - ./rss/postgres/data/:/var/lib/postgresql/data
-    networks:
-      - rssforever
-    restart: always
-
 
 # ---------------------------------------- rsshub ---------------------------------------- #
   rsshub:
@@ -88,20 +72,16 @@ services:
       NODE_ENV: production
       CACHE_TYPE: redis
       REDIS_URL: 'redis://redis:6379/'
-      PUPPETEER_WS_ENDPOINT: 'ws://browserless:3000'
     depends_on:
       - redis
-      - browserless
     networks:
       - rssforever
     
-
   browserless:
     image: browserless/chrome
     restart: always
     networks:
       - rssforever
-
 
   redis:
     image: redis:alpine
@@ -112,7 +92,6 @@ services:
       - ./rsshub/redis-data:/data
     networks:
       - rssforever
-    
 
 # ---------------------------------------- watchtower ---------------------------------------- #
 # 每天早上 10 点定时更新 RSSHub , 如无需可注释或删除本段.
@@ -129,8 +108,7 @@ services:
     networks:
       - rssforever
 
-
-# ---------------------------------------- acme.sh ---------------------------------------- #
+# ---------------------------------------- acme ---------------------------------------- #
   acme:
     image: neilpang/acme.sh
     volumes:
@@ -139,4 +117,3 @@ services:
     restart: always
     network_mode: host
     command: ["sh", "-c", "/conf/start.sh"]
-

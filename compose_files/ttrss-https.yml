@@ -1,9 +1,7 @@
 version: "3"
 
-
 networks:
   rssforever:
-
 
 # ---------------------------------------- nginx ---------------------------------------- #
 services:
@@ -33,37 +31,38 @@ services:
       - service.rss
     command: ["sh", "-c", "/nginx.sh"]
 
+# ---------------------------------------- rss ---------------------------------------- #
+  service.rss:
+    image: ${TTRSS_IMAGE}:${TTRSS_VERSION}
+    environment:
+      - SELF_URL_PATH=${PROTOCOL}://${RSS_DOMAIN}
+      - DB_PASS=${POSTGRES_PASSWORD}
+      - PUID=1000
+      - PGID=1000
+      - ENABLE_PLUGINS=auth_internal,remove_iframe_sandbox
+    networks:
+      - rssforever
+    stdin_open: true
+    tty: true
+    restart: always
 
-# ---------------------------------------- ttrss ---------------------------------------- #
-  freshrss.db:
-    image: postgres:12-alpine
-    hostname: freshrss.db
-    restart: unless-stopped
+  database.postgres:
+    image: postgres:${TTRSS_DB_VERSION}
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./db:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-freshrss}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-freshrss}
-      POSTGRES_DB: ${POSTGRES_DB:-freshrss}
     networks:
       - rssforever
+    restart: always
 
-  service.rss:
-    image: freshrss/freshrss:${FRESHRSS_X86_VERSION}
-    hostname: freshrss-app
-    restart: unless-stopped
-    depends_on:
-      - freshrss.db
-    volumes:
-      - ./data:/var/www/FreshRSS/data
-      - ./extensions:/var/www/FreshRSS/extensions
-    environment:
-      CRON_MIN: '*/20'
-      TZ: Asia/Shanghai
+  service.mercury: 
+    image: wangqiru/mercury-parser-api:latest
     networks:
       - rssforever
+    restart: always
 
-# ---------------------------------------- acme.sh ---------------------------------------- #
+# ---------------------------------------- acme ---------------------------------------- #
   acme:
     image: neilpang/acme.sh
     volumes:
@@ -72,4 +71,3 @@ services:
     restart: always
     network_mode: host
     command: ["sh", "-c", "/conf/start.sh"]
-
